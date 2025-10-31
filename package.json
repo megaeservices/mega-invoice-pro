@@ -1,0 +1,27 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "An ultra-premium, autonomous invoice generator web app built by Google Jules. Designed for Mega E-Services, featuring dynamic templates, multi-language support, and a premium UI/UX.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/megaeservices/mega-invoice-pro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/megaeservices/mega-invoice-pro/issues"
+  },
+  "homepage": "https://github.com/megaeservices/mega-invoice-pro#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.5.0"
+  }
+}
