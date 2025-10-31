@@ -35,6 +35,87 @@ app.post('/api/settings/profile', checkAuth, async (req, res) => {
   }
 });
 
+// Customer Management Endpoints
+
+// POST /api/customers - Create a new customer
+app.post('/api/customers', checkAuth, async (req, res) => {
+  try {
+    const { name, email, phone, address } = req.body;
+    const customerData = {
+      name,
+      email,
+      phone,
+      address,
+      userId: req.user.uid,
+    };
+    const docRef = await db.collection('customers').add(customerData);
+    res.status(201).json({ id: docRef.id, ...customerData });
+  } catch (error) {
+    console.error('Error creating customer:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// GET /api/customers - Fetch all customers for the logged-in user
+app.get('/api/customers', checkAuth, async (req, res) => {
+  try {
+    const snapshot = await db.collection('customers').where('userId', '==', req.user.uid).get();
+    const customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(customers);
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// PUT /api/customers/:id - Update a specific customer
+app.put('/api/customers/:id', checkAuth, async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    const customerRef = db.collection('customers').doc(customerId);
+    const doc = await customerRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).send('Customer not found.');
+    }
+
+    if (doc.data().userId !== req.user.uid) {
+      return res.status(403).send('Forbidden: You do not have permission to update this customer.');
+    }
+
+    const { name, email, phone, address } = req.body;
+    await customerRef.update({ name, email, phone, address });
+    res.status(200).json({ id: customerId, name, email, phone, address });
+  } catch (error) {
+    console.error('Error updating customer:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// DELETE /api/customers/:id - Delete a specific customer
+app.delete('/api/customers/:id', checkAuth, async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    const customerRef = db.collection('customers').doc(customerId);
+    const doc = await customerRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).send('Customer not found.');
+    }
+
+    if (doc.data().userId !== req.user.uid) {
+      return res.status(403).send('Forbidden: You do not have permission to delete this customer.');
+    }
+
+    await customerRef.delete();
+    res.status(200).send('Customer deleted successfully.');
+  } catch (error) {
+    console.error('Error deleting customer:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

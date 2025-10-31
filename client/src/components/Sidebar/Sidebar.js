@@ -30,6 +30,11 @@ const Sidebar = () => {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/customers" className={({ isActive }) => (isActive ? 'active' : '')} onClick={() => setIsOpen(false)}>
+              Customers
+            </NavLink>
+          </li>
+          <li>
             <NavLink to="/settings" className={({ isActive }) => (isActive ? 'active' : '')} onClick={() => setIsOpen(false)}>
               Settings
             </NavLink>
