@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import SettingsPage from './SettingsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import CustomersPage from './pages/CustomersPage/CustomersPage';
+import CreateInvoicePage from './pages/CreateInvoicePage/CreateInvoicePage';
 import './App.css';
 
 function App() {
@@ -40,6 +41,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <CustomersPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-invoice"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CreateInvoicePage />
                 </Layout>
               </ProtectedRoute>
             }

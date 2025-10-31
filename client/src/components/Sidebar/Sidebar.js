@@ -35,6 +35,11 @@ const Sidebar = () => {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/create-invoice" className={({ isActive }) => (isActive ? 'active' : '')} onClick={() => setIsOpen(false)}>
+              Create Invoice
+            </NavLink>
+          </li>
+          <li>
             <NavLink to="/settings" className={({ isActive }) => (isActive ? 'active' : '')} onClick={() => setIsOpen(false)}>
               Settings
             </NavLink>

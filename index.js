@@ -116,6 +116,57 @@ app.delete('/api/customers/:id', checkAuth, async (req, res) => {
 });
 
 
+// Invoice Management Endpoints
+
+// POST /api/invoices - Create a new invoice
+app.post('/api/invoices', checkAuth, async (req, res) => {
+  try {
+    const {
+      customerName,
+      customerEmail,
+      issueDate,
+      dueDate,
+      items,
+      subtotal,
+      total,
+      soldBy,
+      salesChannel,
+    } = req.body;
+
+    const invoiceData = {
+      customerName,
+      customerEmail,
+      issueDate,
+      dueDate,
+      items,
+      subtotal,
+      total,
+      soldBy,
+      salesChannel,
+      userId: req.user.uid,
+    };
+
+    const docRef = await db.collection('invoices').add(invoiceData);
+    res.status(201).json({ id: docRef.id, ...invoiceData });
+  } catch (error) {
+    console.error('Error creating invoice:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// GET /api/invoices - Fetch all invoices for the logged-in user
+app.get('/api/invoices', checkAuth, async (req, res) => {
+  try {
+    const snapshot = await db.collection('invoices').where('userId', '==', req.user.uid).get();
+    const invoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(invoices);
+  } catch (error) {
+    console.error('Error fetching invoices:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
