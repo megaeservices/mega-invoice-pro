@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { db } = require('./firebase-config');
+const checkAuth = require('./authMiddleware');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -10,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // API Endpoints
-app.get('/api/settings/profile', async (req, res) => {
+app.get('/api/settings/profile', checkAuth, async (req, res) => {
   try {
     const doc = await db.collection('settings').doc('companyProfile').get();
     if (!doc.exists) {
@@ -23,7 +24,7 @@ app.get('/api/settings/profile', async (req, res) => {
   }
 });
 
-app.post('/api/settings/profile', async (req, res) => {
+app.post('/api/settings/profile', checkAuth, async (req, res) => {
   try {
     const profileData = req.body;
     await db.collection('settings').doc('companyProfile').set(profileData, { merge: true });

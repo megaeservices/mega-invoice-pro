@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from './context/AuthContext';
 import './SettingsPage.css';
 
 const SettingsPage = () => {
+  const { currentUser } = useContext(AuthContext);
   const [companyName, setCompanyName] = useState('');
   const [companyAddress, setCompanyAddress] = useState('');
   const [companyPhone, setCompanyPhone] = useState('');
@@ -11,8 +13,14 @@ const SettingsPage = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!currentUser) return;
       try {
-        const response = await fetch('/api/settings/profile');
+        const token = await currentUser.getIdToken();
+        const response = await fetch('/api/settings/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           setCompanyName(data.companyName || '');
@@ -31,7 +39,9 @@ const SettingsPage = () => {
   }, []);
 
   const handleSave = async () => {
+    if (!currentUser) return;
     try {
+      const token = await currentUser.getIdToken();
       const profileData = {
         companyName,
         companyAddress,
@@ -45,6 +55,7 @@ const SettingsPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(profileData),
       });
