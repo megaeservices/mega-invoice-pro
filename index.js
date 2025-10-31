@@ -131,6 +131,7 @@ app.post('/api/invoices', checkAuth, async (req, res) => {
       total,
       soldBy,
       salesChannel,
+      signatureDataURL,
     } = req.body;
 
     const invoiceData = {
@@ -143,6 +144,7 @@ app.post('/api/invoices', checkAuth, async (req, res) => {
       total,
       soldBy,
       salesChannel,
+      signatureDataURL,
       userId: req.user.uid,
     };
 

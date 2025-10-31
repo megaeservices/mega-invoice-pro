@@ -71,6 +71,12 @@ const InvoiceTemplate = ({ invoice }) => {
           <p><strong>Sold By:</strong> {invoice.soldBy}</p>
           <p><strong>Sales Channel:</strong> {invoice.salesChannel}</p>
         </div>
+        {invoice.signatureDataURL && (
+          <div className="signature-section">
+            <h2>Signature</h2>
+            <img src={invoice.signatureDataURL} alt="Signature" />
+          </div>
+        )}
       </main>
       <footer>
         <p>Thank you for your business!</p>
