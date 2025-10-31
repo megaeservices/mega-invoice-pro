@@ -5,6 +5,7 @@ import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
 import SettingsPage from './SettingsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
+import CustomersPage from './pages/CustomersPage/CustomersPage';
 import './App.css';
 
 function App() {
@@ -29,6 +30,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <SettingsPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customers"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CustomersPage />
                 </Layout>
               </ProtectedRoute>
             }
