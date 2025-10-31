@@ -10,9 +10,8 @@ const CreateInvoicePage = () => {
     issueDate: '',
     dueDate: '',
   });
-  const [items, setItems] = useState([
-    { description: '', quantity: 1, price: 0 },
-  ]);
+  const [items, setItems] = useState([]);
+  const [itemType, setItemType] = useState('Generic Item');
   const [salesInfo, setSalesInfo] = useState({
     soldBy: '',
     salesChannel: '',
@@ -54,7 +53,26 @@ const CreateInvoicePage = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, price: 0 }]);
+    let newItem;
+    switch (itemType) {
+      case 'Mobile Phone':
+        newItem = { type: 'Mobile Phone', model: '', ram: '', storage: '', color: '', imei: '', quantity: 1, price: 0 };
+        break;
+      case 'Laptop / Chromebook':
+        newItem = { type: 'Laptop / Chromebook', model: '', processor: '', ram: '', storage: '', serialNo: '', quantity: 1, price: 0 };
+        break;
+      case 'Apparel / Clothing':
+        newItem = { type: 'Apparel / Clothing', item: '', size: '', color: '', material: '', quantity: 1, price: 0 };
+        break;
+      default:
+        newItem = { type: 'Generic Item', description: '', quantity: 1, price: 0 };
+    }
+    setItems([...items, newItem]);
+  };
+
+  const removeItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    setItems(newItems);
   };
 
   const handleSaveInvoice = async () => {
@@ -129,32 +147,34 @@ const CreateInvoicePage = () => {
       </div>
       <div className="items-list">
         <h2>Items</h2>
+        <div className="item-type-selection">
+          <label htmlFor="itemType">Select Item Type:</label>
+          <select id="itemType" value={itemType} onChange={(e) => setItemType(e.target.value)}>
+            <option value="Generic Item">Generic Item</option>
+            <option value="Mobile Phone">Mobile Phone</option>
+            <option value="Laptop / Chromebook">Laptop / Chromebook</option>
+            <option value="Apparel / Clothing">Apparel / Clothing</option>
+          </select>
+          <button onClick={addItem}>Add Item</button>
+        </div>
         {items.map((item, index) => (
           <div key={index} className="item-row">
-            <input
-              type="text"
-              name="description"
-              placeholder="Description"
-              value={item.description}
-              onChange={(e) => handleItemChange(index, e)}
-            />
-            <input
-              type="number"
-              name="quantity"
-              placeholder="Quantity"
-              value={item.quantity}
-              onChange={(e) => handleItemChange(index, e)}
-            />
-            <input
-              type="number"
-              name="price"
-              placeholder="Price"
-              value={item.price}
-              onChange={(e) => handleItemChange(index, e)}
-            />
+            {Object.keys(item).map((key) => {
+              if (key === 'type') return null;
+              return (
+                <input
+                  key={key}
+                  type={key === 'quantity' || key === 'price' ? 'number' : 'text'}
+                  name={key}
+                  placeholder={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()}
+                  value={item[key]}
+                  onChange={(e) => handleItemChange(index, e)}
+                />
+              );
+            })}
+            <button onClick={() => removeItem(index)}>Remove</button>
           </div>
         ))}
-        <button onClick={addItem}>Add Item</button>
       </div>
       <div className="totals">
         <p>Subtotal: ${subtotal.toFixed(2)}</p>
