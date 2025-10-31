@@ -7,6 +7,7 @@ import SettingsPage from './SettingsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import CustomersPage from './pages/CustomersPage/CustomersPage';
 import CreateInvoicePage from './pages/CreateInvoicePage/CreateInvoicePage';
+import ViewInvoicePage from './pages/ViewInvoicePage/ViewInvoicePage';
 import './App.css';
 
 function App() {
@@ -51,6 +52,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <CreateInvoicePage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/invoice/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ViewInvoicePage />
                 </Layout>
               </ProtectedRoute>
             }

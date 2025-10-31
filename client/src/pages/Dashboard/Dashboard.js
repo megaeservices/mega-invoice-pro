@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import './Dashboard.css';
 
@@ -31,16 +31,18 @@ const Dashboard = () => {
   return (
     <div className="dashboard">
       <h1>Welcome to Invoice Pro</h1>
-      <Link to="/create-invoice">
+      <NavLink to="/create-invoice">
         <button className="create-invoice-btn">Create New Invoice</button>
-      </Link>
+      </NavLink>
       <div className="recent-invoices">
         <h2>Recent Invoices</h2>
         {invoices.length > 0 ? (
           <ul>
             {invoices.map((invoice) => (
               <li key={invoice.id}>
-                Invoice ID: {invoice.id} - Customer: {invoice.customerName} - Total: ${invoice.total.toFixed(2)}
+                <NavLink to={`/invoice/${invoice.id}`}>
+                  Invoice ID: {invoice.id} - Customer: {invoice.customerName} - Total: ${invoice.total.toFixed(2)}
+                </NavLink>
               </li>
             ))}
           </ul>

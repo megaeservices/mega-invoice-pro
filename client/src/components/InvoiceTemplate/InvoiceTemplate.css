@@ -1,0 +1,65 @@
+.invoice-template {
+  font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+  color: #212529;
+  background-color: #F8F9FA;
+  padding: 2rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.invoice-template header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.invoice-template h1 {
+  color: #0A74DA;
+  margin-bottom: 0.5rem;
+}
+
+.invoice-details {
+  margin-bottom: 2rem;
+}
+
+.invoice-items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+.invoice-items th, .invoice-items td {
+  border: 1px solid #dee2e6;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.invoice-items th {
+  background-color: #e9ecef;
+}
+
+.item-name {
+  font-weight: bold;
+}
+
+.smart-fields {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.invoice-summary {
+  text-align: right;
+  margin-bottom: 2rem;
+}
+
+.sales-info {
+  margin-top: 2rem;
+}
+
+.invoice-template footer {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
