@@ -1,0 +1,19 @@
+.dashboard {
+  text-align: center;
+  padding: 50px;
+}
+
+.create-invoice-btn {
+  background-color: #0A74DA;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.create-invoice-btn:hover {
+  background-color: #085dab;
+}
