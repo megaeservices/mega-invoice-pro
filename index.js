@@ -166,6 +166,28 @@ app.get('/api/invoices', checkAuth, async (req, res) => {
   }
 });
 
+// GET /api/invoices/:id - Fetch a single invoice by ID
+app.get('/api/invoices/:id', checkAuth, async (req, res) => {
+  try {
+    const invoiceId = req.params.id;
+    const invoiceRef = db.collection('invoices').doc(invoiceId);
+    const doc = await invoiceRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).send('Invoice not found.');
+    }
+
+    if (doc.data().userId !== req.user.uid) {
+      return res.status(403).send('Forbidden: You do not have permission to view this invoice.');
+    }
+
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error('Error fetching invoice:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
