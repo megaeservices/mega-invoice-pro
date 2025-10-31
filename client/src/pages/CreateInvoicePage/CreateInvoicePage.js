@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import SignatureCanvas from 'react-signature-canvas';
 import { AuthContext } from '../../context/AuthContext';
 import './CreateInvoicePage.css';
 
 const CreateInvoicePage = () => {
   const { currentUser } = useContext(AuthContext);
+  const sigCanvas = useRef({});
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [invoiceDetails, setInvoiceDetails] = useState({
@@ -18,6 +20,7 @@ const CreateInvoicePage = () => {
   });
   const [subtotal, setSubtotal] = useState(0);
   const [total, setTotal] = useState(0);
+  const [defaultSignatureUrl, setDefaultSignatureUrl] = useState('');
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -79,6 +82,13 @@ const CreateInvoicePage = () => {
     try {
       const token = await currentUser.getIdToken();
       const customer = customers.find(c => c.id === selectedCustomer);
+      let signatureDataURL = '';
+      if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
+        signatureDataURL = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
+      } else if (defaultSignatureUrl) {
+        signatureDataURL = defaultSignatureUrl;
+      }
+
       const response = await fetch('/api/invoices', {
         method: 'POST',
         headers: {
@@ -93,6 +103,7 @@ const CreateInvoicePage = () => {
           subtotal,
           total,
           ...salesInfo,
+          signatureDataURL,
         }),
       });
 
@@ -199,6 +210,40 @@ const CreateInvoicePage = () => {
             setSalesInfo({ ...salesInfo, salesChannel: e.target.value })
           }
         />
+      </div>
+      <div className="signature-section">
+        <h2>Signature</h2>
+        <SignatureCanvas
+          ref={sigCanvas}
+          penColor="black"
+          canvasProps={{ className: 'sigCanvas' }}
+        />
+        <button onClick={() => sigCanvas.current.clear()}>
+          Clear Signature
+        </button>
+        <button onClick={async () => {
+          try {
+            const token = await currentUser.getIdToken();
+            const response = await fetch('/api/settings/profile', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.defaultSignatureUrl) {
+                // We can't directly load an image URL onto the canvas.
+                // Instead, we'll store it and use it if the canvas is empty on save.
+                setDefaultSignatureUrl(data.defaultSignatureUrl);
+                alert('Default signature URL loaded. It will be used if you leave the canvas blank.');
+              } else {
+                alert('No default signature URL found in settings.');
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching default signature:', error);
+          }
+        }}>
+          Use Default Signature
+        </button>
       </div>
       <button onClick={handleSaveInvoice}>Save Invoice</button>
     </div>
