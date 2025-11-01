@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from './context/AuthContext';
+import { db } from './firebaseClient';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import './SettingsPage.css';
 
 const SettingsPage = () => {
@@ -11,37 +13,32 @@ const SettingsPage = () => {
   const [logoUrl, setLogoUrl] = useState('');
   const [defaultSignatureUrl, setDefaultSignatureUrl] = useState('');
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!currentUser) return;
-      try {
-        const token = await currentUser.getIdToken();
-        const response = await fetch('/api/settings/profile', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCompanyName(data.companyName || '');
-          setCompanyAddress(data.companyAddress || '');
-          setCompanyPhone(data.companyPhone || '');
-          setCompanyWebsite(data.companyWebsite || '');
-          setLogoUrl(data.logoUrl || '');
-          setDefaultSignatureUrl(data.defaultSignatureUrl || '');
-        }
-      } catch (error) {
-        console.error('Error fetching company profile:', error);
+  const fetchProfile = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      const docRef = doc(db, 'settings', 'companyProfile');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCompanyName(data.companyName || '');
+        setCompanyAddress(data.companyAddress || '');
+        setCompanyPhone(data.companyPhone || '');
+        setCompanyWebsite(data.companyWebsite || '');
+        setLogoUrl(data.logoUrl || '');
+        setDefaultSignatureUrl(data.defaultSignatureUrl || '');
       }
-    };
+    } catch (error) {
+      console.error('Error fetching company profile:', error);
+    }
+  }, [currentUser]);
 
+  useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [fetchProfile]);
 
   const handleSave = async () => {
     if (!currentUser) return;
     try {
-      const token = await currentUser.getIdToken();
       const profileData = {
         companyName,
         companyAddress,
@@ -50,15 +47,8 @@ const SettingsPage = () => {
         logoUrl,
         defaultSignatureUrl,
       };
-
-      await fetch('/api/settings/profile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(profileData),
-      });
+      const docRef = doc(db, 'settings', 'companyProfile');
+      await setDoc(docRef, profileData, { merge: true });
 
       alert('Settings saved successfully!');
     } catch (error) {
