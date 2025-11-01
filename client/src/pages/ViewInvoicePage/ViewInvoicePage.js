@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { db } from '../../firebaseClient';
+import { doc, getDoc } from 'firebase/firestore';
 import InvoiceTemplate from '../../components/InvoiceTemplate/InvoiceTemplate';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -15,20 +17,16 @@ const ViewInvoicePage = () => {
 
   useEffect(() => {
     const fetchInvoice = async () => {
+      if (!currentUser) return;
       try {
-        const token = await currentUser.getIdToken();
-        const response = await fetch(`/api/invoices/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const docRef = doc(db, 'invoices', id);
+        const docSnap = await getDoc(docRef);
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch invoice.');
+        if (docSnap.exists() && docSnap.data().userId === currentUser.uid) {
+          setInvoice({ id: docSnap.id, ...docSnap.data() });
+        } else {
+          setError('Invoice not found or you do not have permission to view it.');
         }
-
-        const data = await response.json();
-        setInvoice(data);
       } catch (err) {
         setError(err.message);
       } finally {

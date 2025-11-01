@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import { db } from '../../firebaseClient';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import './CustomersPage.css';
 
 const CustomersPage = () => {
@@ -8,25 +10,23 @@ const CustomersPage = () => {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', address: '' });
   const [editingCustomerId, setEditingCustomerId] = useState(null);
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     if (!currentUser) return;
     try {
-      const token = await currentUser.getIdToken();
-      const response = await fetch('/api/customers', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCustomers(data);
-      }
+      const q = query(collection(db, 'customers'), where('userId', '==', currentUser.uid));
+      const querySnapshot = await getDocs(q);
+      const customersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCustomers(customersData);
     } catch (error) {
       console.error('Error fetching customers:', error);
     }
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchCustomers();
+    }
+  }, [currentUser, fetchCustomers]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,24 +35,18 @@ const CustomersPage = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!currentUser) return;
-    const token = await currentUser.getIdToken();
-    const method = editingCustomerId ? 'PUT' : 'POST';
-    const url = editingCustomerId ? `/api/customers/${editingCustomerId}` : '/api/customers';
 
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        fetchCustomers();
-        resetForm();
+      if (editingCustomerId) {
+        // Update existing customer
+        const customerDoc = doc(db, 'customers', editingCustomerId);
+        await updateDoc(customerDoc, { ...formData });
+      } else {
+        // Add new customer
+        await addDoc(collection(db, 'customers'), { ...formData, userId: currentUser.uid });
       }
+      fetchCustomers();
+      resetForm();
     } catch (error) {
       console.error('Error saving customer:', error);
     }
@@ -66,11 +60,8 @@ const CustomersPage = () => {
   const handleDelete = async (customerId) => {
     if (!currentUser) return;
     try {
-      const token = await currentUser.getIdToken();
-      await fetch(`/api/customers/${customerId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+      const customerDoc = doc(db, 'customers', customerId);
+      await deleteDoc(customerDoc);
       fetchCustomers();
     } catch (error) {
       console.error('Error deleting customer:', error);

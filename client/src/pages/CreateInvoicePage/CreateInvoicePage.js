@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { AuthContext } from '../../context/AuthContext';
+import { db } from '../../firebaseClient';
+import { collection, getDocs, addDoc, doc, getDoc, query, where } from 'firebase/firestore';
 import './CreateInvoicePage.css';
 
 const CreateInvoicePage = () => {
@@ -24,15 +26,12 @@ const CreateInvoicePage = () => {
 
   useEffect(() => {
     const fetchCustomers = async () => {
+      if (!currentUser) return;
       try {
-        const token = await currentUser.getIdToken();
-        const response = await fetch('/api/customers', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        const data = await response.json();
-        setCustomers(data);
+        const q = query(collection(db, 'customers'), where('userId', '==', currentUser.uid));
+        const querySnapshot = await getDocs(q);
+        const customersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCustomers(customersData);
       } catch (error) {
         console.error('Error fetching customers:', error);
       }
@@ -79,8 +78,8 @@ const CreateInvoicePage = () => {
   };
 
   const handleSaveInvoice = async () => {
+    if (!currentUser) return;
     try {
-      const token = await currentUser.getIdToken();
       const customer = customers.find(c => c.id === selectedCustomer);
       let signatureDataURL = '';
       if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
@@ -89,30 +88,20 @@ const CreateInvoicePage = () => {
         signatureDataURL = defaultSignatureUrl;
       }
 
-      const response = await fetch('/api/invoices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          customerName: customer.name,
-          customerEmail: customer.email,
-          ...invoiceDetails,
-          items,
-          subtotal,
-          total,
-          ...salesInfo,
-          signatureDataURL,
-        }),
+      await addDoc(collection(db, 'invoices'), {
+        customerName: customer.name,
+        customerEmail: customer.email,
+        ...invoiceDetails,
+        items,
+        subtotal,
+        total,
+        ...salesInfo,
+        signatureDataURL,
+        userId: currentUser.uid,
       });
 
-      if (response.ok) {
-        // Handle successful save (e.g., redirect or show a success message)
-        console.log('Invoice saved successfully');
-      } else {
-        console.error('Error saving invoice');
-      }
+      // Handle successful save (e.g., redirect or show a success message)
+      console.log('Invoice saved successfully');
     } catch (error) {
       console.error('Error saving invoice:', error);
     }
@@ -223,12 +212,10 @@ const CreateInvoicePage = () => {
         </button>
         <button onClick={async () => {
           try {
-            const token = await currentUser.getIdToken();
-            const response = await fetch('/api/settings/profile', {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.ok) {
-              const data = await response.json();
+            const docRef = doc(db, 'settings', 'companyProfile');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              const data = docSnap.data();
               if (data.defaultSignatureUrl) {
                 // We can't directly load an image URL onto the canvas.
                 // Instead, we'll store it and use it if the canvas is empty on save.
